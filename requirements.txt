@@ -1,0 +1,12 @@
+# pandas / pyarrow / scikit-learn are pinned to older releases because Windows
+# Application Control (Smart App Control) on the dev machine blocked the compiled
+# DLLs of the newest releases (pandas 3.1.1, pyarrow 26, scikit-learn 1.9.1).
+# If you are not affected, newer versions should also work.
+pandas==2.2.3
+numpy
+scikit-learn==1.5.2
+lightgbm
+matplotlib
+pyarrow==18.1.0
+jupyter
+holidays

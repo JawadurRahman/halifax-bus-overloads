@@ -1,0 +1,8 @@
+# Data (large, re-downloadable from HRM Open Data) - not tracked
+data/
+
+# Python / Jupyter
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
