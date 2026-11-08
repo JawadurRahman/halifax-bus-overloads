@@ -75,15 +75,19 @@ ML project/
 │   ├── raw/
 │   │   ├── overloads/overload_incidents.csv
 │   │   └── apc/apc_2017.csv ... apc_2026.csv
-│   ├── external/        weather etc. (later)
+│   ├── external/        weather downloads + academic_calendar.csv (tracked)
 │   └── processed/       cleaned parquet files + modelling panel
 ├── docs/                project description + dataset metadata PDFs
-├── notebooks/           01_eda.ipynb, 02_models.ipynb
+├── notebooks/           01_eda.ipynb, 02_models.ipynb, 03_features.ipynb
 ├── src/
 │   ├── load.py          load + clean raw data, write data/processed/*.parquet
 │   ├── join_check.py    overload ↔ APC join diagnostics
-│   └── build_panel.py   build data/processed/panel.parquet
-├── reports/             val_results.csv, test_results.csv, model_selection.json
+│   ├── build_panel.py   build data/processed/panel.parquet
+│   ├── weather.py       download EC weather, build features -> panel_weather.parquet
+│   ├── train.py         baselines, LogReg, LightGBM, metrics, ablation (round 2)
+│   ├── features.py      overload history, calendar, ridership -> panel_features.parquet
+│   └── round3.py        round 3 ablation A-F (validation stage; test stage runs once)
+├── reports/             results tables (val_*, test_*, r3_*), model selections
 │   └── figures/         figures saved by the notebooks
 ├── requirements.txt
 └── README.md
@@ -127,7 +131,15 @@ Then run the pipeline from the project root:
 .venv\Scripts\python src\train.py --test
 ```
 
-Open `notebooks/01_eda.ipynb` and `notebooks/02_models.ipynb` with the `.venv` kernel (`.venv\Scripts\jupyter lab`).
+```bash
+.venv\Scripts\python src\features.py
+```
+
+```bash
+.venv\Scripts\python src\round3.py
+```
+
+Open `notebooks/01_eda.ipynb`, `notebooks/02_models.ipynb` and `notebooks/03_features.ipynb` with the `.venv` kernel (`.venv\Scripts\jupyter lab`).
 
 > **Note on pinned versions:** on the original dev machine, Windows Smart App Control blocked
 > the compiled DLLs of the newest pandas, pyarrow and scikit-learn releases

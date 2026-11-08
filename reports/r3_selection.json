@@ -1,0 +1,57 @@
+{
+  "LogReg A_time": {
+    "C": 0.01,
+    "interact": true
+  },
+  "LightGBM A_time": {
+    "num_leaves": 7,
+    "min_child_samples": 20,
+    "n_estimators": 393
+  },
+  "LogReg B_history": {
+    "C": 1.0,
+    "interact": false
+  },
+  "LightGBM B_history": {
+    "num_leaves": 7,
+    "min_child_samples": 20,
+    "n_estimators": 523
+  },
+  "LogReg C_calendar": {
+    "C": 0.01,
+    "interact": true
+  },
+  "LightGBM C_calendar": {
+    "num_leaves": 7,
+    "min_child_samples": 20,
+    "n_estimators": 164
+  },
+  "LogReg D_ridership": {
+    "C": 0.01,
+    "interact": true
+  },
+  "LightGBM D_ridership": {
+    "num_leaves": 7,
+    "min_child_samples": 100,
+    "n_estimators": 345
+  },
+  "LogReg E_all3": {
+    "C": 0.01,
+    "interact": true
+  },
+  "LightGBM E_all3": {
+    "num_leaves": 15,
+    "min_child_samples": 100,
+    "n_estimators": 177
+  },
+  "LogReg F_all3_weather": {
+    "C": 0.01,
+    "interact": true
+  },
+  "LightGBM F_all3_weather": {
+    "num_leaves": 15,
+    "min_child_samples": 100,
+    "n_estimators": 200
+  },
+  "_best_on_validation": "LightGBM F_all3_weather"
+}

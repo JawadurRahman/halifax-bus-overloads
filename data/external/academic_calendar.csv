@@ -1,0 +1,37 @@
+academic_year,university,event,start_date,end_date,status,source,note
+2021-22,Dalhousie,fall_classes,2021-09-07,2021-12-07,confirmed,Dalhousie Undergraduate Calendar 2021/2022 (Academic Dates) http://dal.ca/content/dam/dalhousie/pdf/academics/academiccalendar/2021_2022%20UNDERGRAD_Calendar.pdf,
+2021-22,Dalhousie,fall_break,2021-11-08,2021-11-12,confirmed,Dalhousie Undergraduate Calendar 2021/2022 (Academic Dates),"called ""Fall Study Week"""
+2021-22,Dalhousie,fall_exams,2021-12-09,2021-12-19,confirmed,Dalhousie Undergraduate Calendar 2021/2022 (Academic Dates),
+2021-22,Dalhousie,winter_classes,2022-01-05,2022-04-06,confirmed,Dalhousie Undergraduate Calendar 2021/2022 (Academic Dates),"CHECK: Jan 2022 classes may have started online (Omicron); not verified, calendar dates used as published"
+2021-22,Dalhousie,winter_break,2022-02-21,2022-02-25,confirmed,Dalhousie Undergraduate Calendar 2021/2022 (Academic Dates),"called ""Winter Study Break"""
+2021-22,Dalhousie,winter_exams,2022-04-08,2022-04-26,confirmed,Dalhousie Undergraduate Calendar 2021/2022 (Academic Dates),
+2022-23,Dalhousie,fall_classes,2022-09-06,2022-12-07,confirmed,Dalhousie Undergraduate Calendar 2022/2023 (Academic Dates) https://cdn.dal.ca/content/dam/dalhousie/pdf/academics/academiccalendar/UG_2223_FullCalendar.pdf,
+2022-23,Dalhousie,fall_break,2022-11-07,2022-11-11,confirmed,Dalhousie Undergraduate Calendar 2022/2023 (Academic Dates),
+2022-23,Dalhousie,fall_exams,2022-12-09,2022-12-20,confirmed,Dalhousie Undergraduate Calendar 2022/2023 (Academic Dates),
+2022-23,Dalhousie,winter_classes,2023-01-09,2023-04-11,confirmed,Dalhousie Undergraduate Calendar 2022/2023 (Academic Dates),
+2022-23,Dalhousie,winter_break,2023-02-20,2023-02-24,confirmed,Dalhousie Undergraduate Calendar 2022/2023 (Academic Dates),
+2022-23,Dalhousie,winter_exams,2023-04-13,2023-04-25,confirmed,Dalhousie Undergraduate Calendar 2022/2023 (Academic Dates),
+2023-24,Dalhousie,fall_classes,2023-09-05,2023-12-06,confirmed,Dalhousie Undergraduate Calendar 2023/2024 (Academic Dates) https://cdn.dal.ca/content/dam/dalhousie/pdf/academics/academiccalendar/UG_2324_FullCalendar.pdf,
+2023-24,Dalhousie,fall_break,2023-11-13,2023-11-17,confirmed,Dalhousie Undergraduate Calendar 2023/2024 (Academic Dates),
+2023-24,Dalhousie,fall_exams,2023-12-08,2023-12-19,confirmed,Dalhousie Undergraduate Calendar 2023/2024 (Academic Dates),
+2023-24,Dalhousie,winter_classes,2024-01-08,2024-04-09,confirmed,Dalhousie Undergraduate Calendar 2023/2024 (Academic Dates),
+2023-24,Dalhousie,winter_break,2024-02-19,2024-02-23,confirmed,Dalhousie Undergraduate Calendar 2023/2024 (Academic Dates),
+2023-24,Dalhousie,winter_exams,2024-04-11,2024-04-23,confirmed,Dalhousie Undergraduate Calendar 2023/2024 (Academic Dates),
+2024-25,Dalhousie,fall_classes,2024-09-03,2024-12-04,confirmed,Dalhousie Undergraduate Calendar 2024/2025 (Academic Dates) https://cdn.dal.ca/content/dam/dalhousie/pdf/academics/academiccalendar/UG_2425_FullCalendar.pdf,
+2024-25,Dalhousie,fall_break,2024-11-11,2024-11-15,confirmed,Dalhousie Undergraduate Calendar 2024/2025 (Academic Dates),
+2024-25,Dalhousie,fall_exams,2024-12-06,2024-12-17,confirmed,Dalhousie Undergraduate Calendar 2024/2025 (Academic Dates),
+2024-25,Dalhousie,winter_classes,2025-01-06,2025-04-07,confirmed,Dalhousie Undergraduate Calendar 2024/2025 (Academic Dates),
+2024-25,Dalhousie,winter_break,2025-02-17,2025-02-21,confirmed,Dalhousie Undergraduate Calendar 2024/2025 (Academic Dates),
+2024-25,Dalhousie,winter_exams,2025-04-09,2025-04-26,confirmed,Dalhousie Undergraduate Calendar 2024/2025 (Academic Dates),
+2025-26,Dalhousie,fall_classes,2025-09-02,2025-12-10,confirmed,"Dalhousie Undergraduate Calendar 2025/2026 (Academic Dates, revised) https://cdn.dal.ca/content/dam/dalhousie/pdf/academics/academiccalendar/UG_2025_2026_DAL.pdf; https://www.dal.ca/dept/hr/labour-relations/updates/2025/08/31/student_update_on_labour_disruption_and_start_of_fall_term.html","CHECK: faculty (DFA) lockout Aug 20-Sep 18 2025; most classes did not run until Sep 23 (calendar prints ""Tuesday, 22"" - Sep 22 2025 was a Monday). Classes end Dec 3 for courses ongoing since Sep 2, Dec 10 for courses resumed Sep 23. Official start used, no special handling."
+2025-26,Dalhousie,fall_break,2025-11-10,2025-11-14,confirmed,"Dalhousie Undergraduate Calendar 2025/2026; https://www.dal.ca/dept/hr/labour-relations/updates/2025/09/22/updates_on_the_fall_break__exam_schedule_and_more.html",
+2025-26,Dalhousie,fall_exams,2025-12-11,2025-12-21,confirmed,"Dalhousie Undergraduate Calendar 2025/2026; https://www.dal.ca/dept/hr/labour-relations/updates/2025/09/22/updates_on_the_fall_break__exam_schedule_and_more.html",revised after the lockout
+2025-26,Dalhousie,winter_classes,2026-01-07,2026-04-09,confirmed,Dalhousie Undergraduate Calendar 2025/2026 (Academic Dates),
+2025-26,Dalhousie,winter_break,2026-02-16,2026-02-20,confirmed,Dalhousie Undergraduate Calendar 2025/2026 (Academic Dates),
+2025-26,Dalhousie,winter_exams,2026-04-11,2026-04-27,confirmed,Dalhousie Undergraduate Calendar 2025/2026 (Academic Dates),
+2026-27,Dalhousie,fall_classes,2026-09-08,2026-12-09,partly_confirmed,https://www.dal.ca/study/plan-your-degree/important-dates.html (fetched 2026-11-08),"CHECK: start confirmed; no ""classes end"" entry on the page - Dec 9 inferred (lieu day Dec 9, break before exams Dec 10)"
+2026-27,Dalhousie,fall_break,2026-11-09,2026-11-13,confirmed,https://www.dal.ca/study/plan-your-degree/important-dates.html,
+2026-27,Dalhousie,fall_exams,2026-12-11,2026-12-20,confirmed,https://www.dal.ca/study/plan-your-degree/important-dates.html,
+2026-27,Dalhousie,winter_classes,2027-01-11,2027-04-13,confirmed,https://www.dal.ca/study/plan-your-degree/important-dates.html,
+2026-27,Dalhousie,winter_break,2027-02-15,2027-02-19,confirmed,https://www.dal.ca/study/plan-your-degree/important-dates.html,
+2026-27,Dalhousie,winter_exams,2027-04-15,2027-04-29,confirmed,https://www.dal.ca/study/plan-your-degree/important-dates.html,

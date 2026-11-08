@@ -1,0 +1,6 @@
+{
+  "run_at": "2026-11-08T13:32:30",
+  "best_on_validation": "LightGBM F_all3_weather",
+  "trained_on": "2022-2024",
+  "note": "single evaluation of the round-3 feature sets on 2026"
+}

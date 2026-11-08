@@ -1,5 +1,9 @@
-# Data (large, re-downloadable from HRM Open Data) - not tracked
-data/
+# Data (large, re-downloadable) - not tracked
+data/raw/
+data/processed/
+data/external/*
+# ...except the hand-built academic calendar
+!data/external/academic_calendar.csv
 
 # Python / Jupyter
 .venv/

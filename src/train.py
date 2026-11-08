@@ -50,15 +50,18 @@ LOGREG_GRID = {"C": [0.01, 0.1, 1.0], "interact": [False, True]}
 # ---------------------------------------------------------------------------
 # data
 # ---------------------------------------------------------------------------
-def load_data() -> pd.DataFrame:
-    """panel_weather (2022+) + y_lag1w (overload in the previous non-holiday same weekday)."""
+def load_data(panel_file: str = "panel_weather.parquet") -> pd.DataFrame:
+    """Modelling panel (2022+) + y_lag1w (overload in the previous non-holiday same weekday).
+
+    panel_file: panel_weather.parquet (round 2) or panel_features.parquet (round 3, same rows).
+    """
     full = pd.read_parquet(PROCESSED / "panel.parquet")
     for c in ["route", "period"]:
         full[c] = full[c].astype(str)
     full = full.sort_values(["route", "period", "dow", "date"])
     full["y_lag1w"] = full.groupby(["route", "period", "dow"]).y.shift(1)
 
-    df = pd.read_parquet(PROCESSED / "panel_weather.parquet")
+    df = pd.read_parquet(PROCESSED / panel_file)
     routes = list(df["route"].cat.categories) if hasattr(df["route"], "cat") else sorted(df.route.unique())
     for c in ["route", "period"]:
         df[c] = df[c].astype(str)
@@ -102,8 +105,8 @@ def evaluate(d: pd.DataFrame, score, name: str = "") -> dict:
     return out
 
 
-def bootstrap_diff(d: pd.DataFrame, s1, s2, n_boot: int = 1000) -> dict:
-    """Paired bootstrap over DATES of PR-AUC(s2) - PR-AUC(s1)."""
+def bootstrap_diff(d: pd.DataFrame, s1, s2, n_boot: int = 1000, metric=average_precision_score) -> dict:
+    """Paired bootstrap over DATES of metric(s2) - metric(s1) (default: PR-AUC)."""
     rng = np.random.default_rng(SEED)
     dates = d["date"].to_numpy()
     uniq, inv = np.unique(dates, return_inverse=True)
@@ -114,9 +117,9 @@ def bootstrap_diff(d: pd.DataFrame, s1, s2, n_boot: int = 1000) -> dict:
         pick = np.concatenate([idx_by_day[i] for i in rng.integers(0, len(uniq), len(uniq))])
         if y[pick].sum() == 0:
             continue
-        diffs.append(average_precision_score(y[pick], s2[pick]) - average_precision_score(y[pick], s1[pick]))
+        diffs.append(metric(y[pick], s2[pick]) - metric(y[pick], s1[pick]))
     diffs = np.array(diffs)
-    return {"diff": average_precision_score(y, s2) - average_precision_score(y, s1),
+    return {"diff": metric(y, s2) - metric(y, s1),
             "ci_low": np.percentile(diffs, 2.5), "ci_high": np.percentile(diffs, 97.5),
             "p_le_0": float((diffs <= 0).mean())}
 
@@ -143,16 +146,26 @@ def baseline_last_week(target: pd.DataFrame) -> np.ndarray:
 # ---------------------------------------------------------------------------
 # models
 # ---------------------------------------------------------------------------
+# boardings-type counts -> log1p; ratios -> log; everything else numeric -> as is (all then scaled)
+LOG1P_COLS = LAGS + ["peak_hh_lag1w", "peak_hh_mean4w", "peakdir_lag1w", "peakdir_mean4w"]
+LOG_COLS = ["yoy_ratio", "lag_ratio"]
+
+
 def make_logreg(features: list[str], C: float = 1.0, interact: bool = False) -> Pipeline:
     cat = [c for c in TIME if c in features] + (["route_period"] if interact else [])
-    lag = [c for c in LAGS if c in features]
-    wx = [c for c in WEATHER if c in features]
+    lag = [c for c in features if c in LOG1P_COLS]
+    rat = [c for c in features if c in LOG_COLS]
+    wx = [c for c in features if c not in TIME and c not in LOG1P_COLS and c not in LOG_COLS]
     tr = [("cat", OneHotEncoder(handle_unknown="ignore"), cat)]
     if lag:
         tr.append(("lag", Pipeline([("imp", SimpleImputer(strategy="median")),
                                     ("log", FunctionTransformer(np.log1p, feature_names_out="one-to-one")),
                                     ("sc", StandardScaler())]), lag))
-    if wx:
+    if rat:
+        tr.append(("ratio", Pipeline([("imp", SimpleImputer(strategy="median")),
+                                      ("log", FunctionTransformer(np.log, feature_names_out="one-to-one")),
+                                      ("sc", StandardScaler())]), rat))
+    if wx:   # "wx" kept as the name for round-2 compatibility; holds weather and other numeric features
         tr.append(("wx", Pipeline([("imp", SimpleImputer(strategy="median")), ("sc", StandardScaler())]), wx))
     return Pipeline([("prep", ColumnTransformer(tr)),
                      ("clf", LogisticRegression(C=C, class_weight="balanced", max_iter=5000))])
@@ -183,7 +196,8 @@ def fit_lgbm(train: pd.DataFrame, features: list[str], num_leaves: int, min_chil
 # ---------------------------------------------------------------------------
 # stage 1: validation
 # ---------------------------------------------------------------------------
-def run_validation(df: pd.DataFrame, verbose: bool = True):
+def run_validation(df: pd.DataFrame, verbose: bool = True, feature_sets: dict | None = None):
+    feature_sets = feature_sets or FEATURE_SETS
     tr, va = df[df.split == "train"], df[df.split == "val"]
     rows, scores, selection = [], {}, {}
 
@@ -194,7 +208,7 @@ def run_validation(df: pd.DataFrame, verbose: bool = True):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        for fs_name, feats in FEATURE_SETS.items():
+        for fs_name, feats in feature_sets.items():
             # logistic regression
             best = None
             for C, inter in product(LOGREG_GRID["C"], LOGREG_GRID["interact"]):
@@ -233,19 +247,20 @@ def run_validation(df: pd.DataFrame, verbose: bool = True):
 # ---------------------------------------------------------------------------
 # stage 2: test
 # ---------------------------------------------------------------------------
-def fit_selected(train: pd.DataFrame, name: str, params: dict):
+def fit_selected(train: pd.DataFrame, name: str, params: dict, feature_sets: dict | None = None,
+                 seed: int = SEED):
     fs = name.split(" ", 1)[1]
-    feats = FEATURE_SETS[fs]
+    feats = (feature_sets or FEATURE_SETS)[fs]
     if name.startswith("LogReg"):
         cols = logreg_cols(feats, params["interact"])
         m = make_logreg(feats, params["C"], params["interact"]).fit(train[cols], train.y)
         return m, cols
     m = fit_lgbm(train, feats, params["num_leaves"], params["min_child_samples"],
-                 n_estimators=params["n_estimators"])
+                 n_estimators=params["n_estimators"], seed=seed)
     return m, feats
 
 
-def run_test(df: pd.DataFrame, selection: dict, train_splits=("train",)):
+def run_test(df: pd.DataFrame, selection: dict, train_splits=("train",), feature_sets: dict | None = None):
     tr, te = df[df.split.isin(train_splits)], df[df.split == "test"]
     rows, scores, models = [], {}, {}
     s = baseline_hist_rate(tr, te); scores["Baseline: hist rate"] = s
@@ -255,7 +270,7 @@ def run_test(df: pd.DataFrame, selection: dict, train_splits=("train",)):
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         for name, params in selection.items():
-            m, cols = fit_selected(tr, name, params)
+            m, cols = fit_selected(tr, name, params, feature_sets)
             p = m.predict_proba(te[cols])[:, 1]
             scores[name] = p; models[name] = (m, cols)
             rows.append(evaluate(te, p, name))
