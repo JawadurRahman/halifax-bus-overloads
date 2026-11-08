@@ -83,12 +83,7 @@ def add_lag_features(grid: pd.DataFrame) -> pd.DataFrame:
 
 
 def add_weather_features(panel: pd.DataFrame) -> pd.DataFrame:
-    """PLACEHOLDER - Environment Canada (Halifax Stanfield) weather, to be added.
-
-    Planned: daily/period precipitation, snowfall, temperature, etc. merged on `date`
-    (and period, if hourly data is used). Use the forecast-available / same-day values
-    only if they would be known at prediction time.
-    """
+    """No-op: weather is joined separately by src/weather.py -> data/processed/panel_weather.parquet."""
     return panel
 
 

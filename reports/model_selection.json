@@ -1,0 +1,29 @@
+{
+  "LogReg A_time": {
+    "C": 0.01,
+    "interact": true
+  },
+  "LightGBM A_time": {
+    "num_leaves": 7,
+    "min_child_samples": 20,
+    "n_estimators": 393
+  },
+  "LogReg B_lags": {
+    "C": 0.01,
+    "interact": true
+  },
+  "LightGBM B_lags": {
+    "num_leaves": 7,
+    "min_child_samples": 20,
+    "n_estimators": 130
+  },
+  "LogReg C_weather": {
+    "C": 0.01,
+    "interact": true
+  },
+  "LightGBM C_weather": {
+    "num_leaves": 7,
+    "min_child_samples": 100,
+    "n_estimators": 184
+  }
+}

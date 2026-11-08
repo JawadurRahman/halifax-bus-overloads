@@ -32,7 +32,7 @@ the weather features.
 | Passenger overload incidents (2020–2026) | [HRM Open Data](https://data-hrm.hub.arcgis.com/datasets/HRM::transit-passenger-overload-incidents/about) | `data/raw/overloads/overload_incidents.csv` | `Transit_Passenger_Overload_Incidents_-666457333674270898.csv` |
 | Automated Passenger Counts, current year (2026) | [HRM Open Data](https://data-hrm.hub.arcgis.com/datasets/HRM::transit-automated-passenger-counts/about) | `data/raw/apc/apc_2026.csv` | `Transit_Automated_Passenger_Counts_8663944865722026735.csv` |
 | Automated Passenger Counts, archived (2017–2025) | HRM Open Data catalogue: search "Transit Automated Passenger Counts Archived" | `data/raw/apc/apc_2017.csv` … `apc_2025.csv` | `transit-automated-passenger-counts-archived/transit-automated-passenger-counts-YYYY.csv` |
-| Weather (to add later) | [Environment Canada historical data](https://climate.weather.gc.ca/historical_data/search_historic_data_e.html), Halifax Stanfield | `data/external/` | – |
+| Weather, Dec 2021 – Oct 2026 | [Environment Canada historical data](https://climate.weather.gc.ca/historical_data/search_historic_data_e.html): HALIFAX STANFIELD INT'L A, Climate ID 8202251, Station ID 50620, hourly + daily bulk CSV | `data/external/weather/hourly/stanfield_hourly_YYYY_MM.csv`, `.../daily/stanfield_daily_YYYY.csv` | downloaded by `src/weather.py --download` |
 
 Dataset metadata sheets are in `docs/`.
 
@@ -59,7 +59,13 @@ and place them at the paths shown.
   periods AM 06–10, MID 10–14, PM 14–19, EVE 19–24; lag features use only previous weeks'
   same-weekday values. 2020 is flagged `is_covid`.
 
-See the summary at the end of `notebooks/01_eda.ipynb` for findings.
+- **Weather (round 2):** Halifax Stanfield (8202251 / 50620). Hourly precipitation is not reported
+  there, so precipitation/snow come from the daily file. Hourly LST timestamps are converted to
+  Halifax clock time. Same-day weather is used as a feature (perfect-forecast assumption).
+- **Modelling split (round 2):** 2022+ only; train 2022–2024, validation 2025, test 2026 (Jan–Oct).
+  Test models are trained on 2022–2024; a refit on 2022–2025 is reported as a sensitivity check.
+
+See the summaries at the end of `notebooks/01_eda.ipynb` and `notebooks/02_models.ipynb` for findings.
 
 ## Folder layout
 
@@ -72,12 +78,13 @@ ML project/
 │   ├── external/        weather etc. (later)
 │   └── processed/       cleaned parquet files + modelling panel
 ├── docs/                project description + dataset metadata PDFs
-├── notebooks/           01_eda.ipynb
+├── notebooks/           01_eda.ipynb, 02_models.ipynb
 ├── src/
 │   ├── load.py          load + clean raw data, write data/processed/*.parquet
 │   ├── join_check.py    overload ↔ APC join diagnostics
 │   └── build_panel.py   build data/processed/panel.parquet
-├── reports/figures/     figures saved by the notebooks
+├── reports/             val_results.csv, test_results.csv, model_selection.json
+│   └── figures/         figures saved by the notebooks
 ├── requirements.txt
 └── README.md
 ```
@@ -108,9 +115,22 @@ Then run the pipeline from the project root:
 .venv\Scripts\python src\build_panel.py
 ```
 
-Open `notebooks/01_eda.ipynb` with the `.venv` kernel (`.venv\Scripts\jupyter lab`).
+```bash
+.venv\Scripts\python src\weather.py --download
+```
+
+```bash
+.venv\Scripts\python src\train.py
+```
+
+```bash
+.venv\Scripts\python src\train.py --test
+```
+
+Open `notebooks/01_eda.ipynb` and `notebooks/02_models.ipynb` with the `.venv` kernel (`.venv\Scripts\jupyter lab`).
 
 > **Note on pinned versions:** on the original dev machine, Windows Smart App Control blocked
 > the compiled DLLs of the newest pandas, pyarrow and scikit-learn releases
 > ("An Application Control policy has blocked this file"). Older releases are pinned in
-> `requirements.txt` for that reason.
+> `requirements.txt` for that reason. LightGBM 4.7 also crashed intermittently with a native
+> access violation, so `lightgbm==4.5.0` and `numpy==2.1.3` are pinned too.
