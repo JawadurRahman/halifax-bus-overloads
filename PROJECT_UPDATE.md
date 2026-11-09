@@ -1,107 +1,122 @@
-# Predicting Halifax Bus Overloads — Project Update
+# Predicting When Halifax Buses Leave People Behind
 
-2026-11-08 · Jawadur Rahman
+2026-11-08 · Jawadur Rahman · CSCI 6505 project update
 
-We can predict which Halifax Transit routes and time periods are likely to pass up waiting riders, clearly better than a simple historical lookup. Adding weather did not make the predictions better.
+**In one sentence:** we can predict which bus routes and times are likely to leave riders behind, clearly better than simple rules, and the most useful clue is whether it has been happening there recently.
 
-## The question
+## The problem
 
-When a bus is full, it drives past people waiting at the stop. Halifax Transit logs each one as a "passenger overload", and released these records publicly in September 2026.
+When a Halifax Transit bus is full, the driver has to drive past people waiting at the stop. Halifax Transit calls this a **passenger overload** and logs each one. In September 2026, the city published these records for the first time.
 
-We asked two things. Can we predict, ahead of time, which route and time period on a weekday will have an overload? And does weather improve that prediction beyond past ridership? If overloads can be predicted, extra buses could be sent before riders are left behind.
+Being left at the stop is a real problem for riders: you're late for class or work, and in winter you're standing in the cold waiting for the next bus. If Halifax Transit knew *in advance* where and when this is likely, it could add a bus or adjust the schedule before it happens.
 
-Each prediction is a yes/no for one route, one weekday and one period: morning (6–10), midday (10–14), afternoon (14–19) or evening (19–24).
+## Our question
 
-## Data
+1. **Can we predict, ahead of time, which route and time of day will have a bus leaving people behind?**
+2. **What actually helps the prediction?** Is it ridership, weather, the university calendar, or something else?
 
-We combined three public datasets, all for Halifax.
+## How we set it up
 
-| Dataset | Source | Coverage | What it tells us |
-| --- | --- | --- | --- |
-| [Passenger overload incidents](https://data-hrm.hub.arcgis.com/datasets/HRM::transit-passenger-overload-incidents/about) | HRM Open Data | 9,354 incidents, Jan 2020 – Oct 2026 | When and where a full bus passed riders. It does not record how many people were left. |
-| [Automated passenger counts](https://data-hrm.hub.arcgis.com/datasets/HRM::transit-automated-passenger-counts/about) | HRM Open Data (current + archived) | 9.1 million rows, Oct 2017 – Nov 2026 | How many people boarded each route, every half hour |
-| [Hourly and daily weather](https://climate.weather.gc.ca/historical_data/search_historic_data_e.html) | Environment Canada, Halifax Stanfield airport | Dec 2021 – Oct 2026 | Temperature, wind, rain, snowfall, snow on the ground |
+We split every weekday into four periods: **morning** (6–10 am), **midday** (10 am–2 pm), **afternoon** (2–7 pm) and **evening** (7 pm–midnight).
 
-We focused on the 10 busiest routes for overloads (3, 8, 9A, 1, 4, 90, 9B, 10, 2 and 5), which account for 81% of incidents since 2023.
+We looked at the **10 routes** with the most overloads (3, 8, 9A, 9B, 1, 4, 90, 10, 2 and 5). They account for 81% of all overloads since 2023.
 
-## What we did
+That gives 40 route-periods per day (10 routes × 4 periods). For each one, the question is simply:
 
-1. **Cleaned the data.** Converted overload times from UTC to Halifax time, removed ferry incidents and counter glitches, and matched each overload to the ridership counts (95% matched to the exact half-hour).
-2. **Built one table to predict from.** One row per route, weekday and period: 68,080 rows from 2020 to 2026. Holidays were removed. About 6.6% of rows had at least one overload.
-3. **Explored the patterns.** Overloads peak between 3 and 5 pm, are about twice as common Tuesday to Thursday as on Monday or Friday, and jump every September and October when classes start.
-4. **Added weather.** Temperature, wind, rain, snowfall and snow on the ground for each day and period.
-5. **Trained and tested models.** We trained on 2022–2024, tuned on 2025, and tested once on January–October 2026, which the models had never seen. 2020 was left out because COVID capacity limits make it unlike other years.
+> **Will a bus on this route leave someone behind during this period? Yes or no.**
 
-We compared two simple rules against two machine-learning models:
+This is a **classification** problem. About 7% of route-periods have an overload, so it's a fairly rare event.
 
-- **"Same as last week"**: predict an overload if there was one at the same time last week.
-- **"Historical rate"**: how often that route and period had overloads in that month in past years.
-- **Logistic regression**: a standard statistical model.
-- **LightGBM**: a decision-tree model that can pick up combinations, such as one route being busy only in September afternoons.
+## The data
+
+| Data | What it tells us | Source |
+| --- | --- | --- |
+| **Overload reports** | When and where a full bus passed riders (9,354 reports, 2020–2026). It does *not* say how many people were left behind. | [HRM Open Data](https://data-hrm.hub.arcgis.com/datasets/HRM::transit-passenger-overload-incidents/about) |
+| **Passenger counts (APC)** | How many people boarded each route, every half hour (2017–2026). Counted automatically by sensors on the bus doors. | [HRM Open Data](https://data-hrm.hub.arcgis.com/datasets/HRM::transit-automated-passenger-counts/about) |
+| **Weather** | Temperature, rain, snow and wind each day | [Environment Canada](https://climate.weather.gc.ca/historical_data/search_historic_data_e.html), Halifax airport |
+| **University calendar** | When Dal terms, breaks and exams happen | Dalhousie academic calendars |
+
+## What we found in the data first
+
+- Overloads happen mostly in the **afternoon rush, 3–5 pm**.
+- They are more common **Tuesday to Thursday** than Monday or Friday.
+- They **jump every September and October**, when classes start, even though total ridership only rises a little.
+- A handful of routes (3, 8, 9A, 9B, 1) have most of them.
+
+## How we tested the predictions
+
+To be fair, we trained on the past and tested on the future, just like it would be used in real life:
+
+- **Learn from:** 2022–2024
+- **Fine-tune on:** 2025
+- **Final test:** January–October 2026, which the models never saw while being built
+
+We compared our models against simple rules anyone could use without machine learning:
+
+| Method | How it works, in plain words |
+| --- | --- |
+| **Random guessing** | Pick route-periods at random. |
+| **Same as last week** | "There was an overload here last Tuesday afternoon, so expect one this Tuesday too." Knows what's happening *now*, but nothing about the usual pattern. |
+| **Historical rate** | "In past Octobers, Route 1 afternoons had overloads 30% of the time, so the risk is 30%." Knows the *usual* pattern, but nothing about what's happening now. |
+| **Basic model** | A machine-learning model (LightGBM) that learns from route, time of day, weekday and month. |
+| **Final model** | The same model, plus **recent overload history**: how often this route-period had overloads in the last few weeks. Knows both the usual pattern *and* what's happening now. |
 
 ## Results
 
-On 2026 data, LightGBM was the best method: it ranks risky route-periods 16% better than the historical-rate rule, and the difference is statistically significant.
+**How we score it:** imagine Halifax Transit can only check the **2 riskiest route-periods each day** (out of 40) and send an extra bus there. In 2026, 656 route-periods actually had an overload. How many of those would each method have caught?
 
-| Method | Prediction score on 2026 (0–1, higher is better) | Overloads caught if we flag the riskiest 5% (of 656) |
+| Method | Overloads caught (out of 656) | Overall score (0 to 1, higher is better) |
 | --- | --- | --- |
-| LightGBM | **0.289** | **154** (23%) |
-| Logistic regression | 0.276 | 144 (22%) |
-| Historical rate | 0.249 | 135 (21%) |
-| Same as last week | 0.141 | 129 (20%) |
-| Random guessing | 0.079 | about 33 (5%) |
+| Random guessing | about 33 (5%) | 0.08 |
+| Same as last week | 129 (20%) | 0.14 |
+| Historical rate | 135 (21%) | 0.25 |
+| Basic model | 159 (24%) | 0.29 |
+| **Final model** | **194 (30%)** | **0.37** |
 
-The score is PR-AUC: how well a method puts the real overloads at the top of its risk list. Flagging the top 5% means about 2 of the 40 route-periods each day.
+The **overall score** (called PR-AUC) checks how well each method puts real overloads near the top of its risk list, across every cutoff, not just the top 2.
 
-- LightGBM's flags were right 37% of the time, and caught 229 of the 823 incidents reported in 2026 (28%).
-- Its gain over the historical rate is +0.040, with a 95% confidence interval of +0.021 to +0.063.
-- Most of the predictive power comes from **which route, which period, which month and which weekday**. The models mainly learn where and when overloads happen.
+**What this means:**
 
-## Does weather help?
+- The final model catches about **60 more overloads** than the best simple rule (194 vs 135).
+- When it flags a route-period as risky, it's **right about half the time** (47%).
+- We checked that this improvement is real and not luck: we resampled the test data many times, and the final model beat the historical rate every time.
 
-No. Adding weather did not reliably improve the predictions, even though we gave the models the actual weather for each day, as if the forecast were perfect.
+## What helps and what doesn't
 
-| Features given to LightGBM | Score on 2025 (tuning) | Score on 2026 (test) |
-| --- | --- | --- |
-| A. Route, period, weekday, month | 0.372 | 0.292 |
-| B. A + past ridership | 0.370 | 0.287 |
-| C. B + weather | 0.375 | 0.289 |
+We added each kind of information one at a time to see whether it improved the prediction.
 
-Weather's small gain on 2025 (+0.006) did not hold up on 2026: +0.002, with a 95% confidence interval of −0.005 to +0.008. Past ridership did not help either, because route, period and month already capture it.
+| Added information | Did it help? |
+| --- | --- |
+| **Recent overload history** (overloads on this route-period in the past few weeks) | **Yes, clearly** |
+| Ridership counts (how many people boarded recently) | No |
+| University calendar (week of term, breaks, exams) | No |
+| Weather (even with perfect knowledge of the actual weather) | No |
 
-The weather effects that do show up are small and point in a sensible direction. Heavy rain, strong gusts and big snowfalls make overloads slightly *less* likely, probably because fewer people ride.
+**Why didn't ridership, the calendar or weather help?** They're not useless; they just don't add anything new:
 
-## Caveats and next steps
+- **Ridership** mostly tells the model "this route is busy at this time", which it already knows from the route, time and month.
+- **The calendar** shows a real pattern (overloads are 3–4 times more common in the first weeks of fall term), but the month already captures it.
+- **Weather** has a small effect in a sensible direction: in heavy rain or snow, overloads are slightly *less* likely, probably because fewer people ride. It's too small to improve the predictions.
 
-The models work, but the gain is modest and these results have limits.
+## The main takeaway
 
-- **Modest in practice.** Flagging the riskiest 5% catches about a quarter of overloads, and about 6 in 10 flags are false alarms.
-- **Reported, not actual, overloads.** Overloads per million boardings almost tripled from 2022 to 2023. Some of that may be a change in how drivers report, not just more crowding.
-- **The overload rate shifts by year:** 3% in 2022, about 9% in 2023–2025, 8% in 2026. This makes 2026 harder to score well on.
-- **One weather station.** The airport is about 30 km from downtown and has no hourly rainfall, so rain and snow are daily totals.
-- **Risk scores are rankings, not real probabilities.** They would need recalibrating before being read as percentages.
+> **Buses leaving people behind is a structural problem, not a random one.** It depends on *which route*, *what time* and *which month*, and above all on **whether it has been happening there recently**. A route-period that keeps overloading probably just doesn't have enough buses at that time.
 
-The university calendar and recent overload history were tested next; see the round 3 section below. The code, notebooks and figures are in this repository (`src/`, `notebooks/01_eda.ipynb`, `notebooks/02_models.ipynb`, `notebooks/03_features.ipynb`, `reports/figures/`).
+In practice, this means Halifax Transit's own overload reports are an early-warning signal. If a route-period has overloaded several times in the past few weeks, it will probably keep doing so, and that's where extra capacity is needed.
 
-## Round 3: new feature groups (2026-11-08)
+## Limitations
 
-We tested three new groups of features, each built only from information available before the predicted day. Only one helped: **recent overload history**.
+- **We predict *whether* riders were left behind, not *how many*.** The data doesn't record how many people were passed up.
+- **Reports depend on drivers.** Some drivers or routes may report more consistently than others, and overloads per rider almost tripled from 2022 to 2023, which may partly be a change in reporting.
+- **The overload rate changes from year to year** (about 3% in 2022, about 9% in 2023–2025, 8% in 2026), which makes each new year a bit harder to predict.
+- **One weather station**, at the airport about 30 km from downtown.
+- **The fall 2025 Dal faculty lockout** delayed most classes to September 23. Our calendar used the official start date, so the calendar features were off for that fall. Worth checking: did the September 2025 overload spike also start late?
+- **Weekends, holidays and late night (midnight–6 am) were left out.**
 
-| Added to route + period + weekday + month | Did it help? | Gain on 2026 (PR-AUC, 95% CI) |
-| --- | --- | --- |
-| Overload history (overloads on that route-period in the past 1–4 weeks, days since the last one) | **Yes** | **+0.069** (+0.044 to +0.094) |
-| University calendar (term weeks, breaks, exams; Dal dates) | No | +0.008 (−0.006 to +0.025) |
-| Better ridership (peak half-hour, busier direction, year-over-year change, "busier than usual") | No | −0.002 (−0.019 to +0.019) |
-| Weather, on top of all three | No | +0.004 (−0.005 to +0.013) |
+## What's next
 
-- The best model (LightGBM with all features, chosen on 2025) scores **0.370** on 2026. That compares with 0.292 for the earlier model and 0.249 for the historical-rate rule.
-- Flagging its riskiest 5% of route-periods catches **194 of 656 overloads (30%)**, covering 294 of 823 incidents, with **47% of flags correct**. The earlier model caught 159, with 38% of flags correct.
-- A model with overload history alone does almost as well (0.361), so the history features carry nearly all of the gain.
-- The calendar shows a real pattern: overloads are 3–4 times as common in the first weeks of fall term. But that pattern is already captured by the month.
+1. Check the 2025 lockout: did the September overload spike shift later that year?
+2. Prepare the presentation (Nov 24 / 26 / Dec 1).
+3. Write the 5-page paper (due Dec 11).
 
-**What it means.** Our conclusion mostly holds: overload risk is structural (where and when) rather than driven by day-to-day demand or weather.
-- The refinement: the best extra signal is *where overloads have just been happening*. A route and period that keeps overloading probably has a persistent capacity shortfall.
-- That signal also follows each year's overall level. This helps with the year-to-year drift that a time-only model cannot follow.
-- Ridership counts, the term calendar and weather still add nothing on top.
-
-**A note on the test set.** We had already looked at the 2026 results once, in the previous round. This time every choice was made on 2025 data, and each new feature set was scored on 2026 only once.
+The code, notebooks and figures are in this repository: `src/`, `notebooks/` (01 = exploring the data, 02 = first models, 03 = new features) and `reports/figures/`.
