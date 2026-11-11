@@ -78,7 +78,7 @@ ML project/
 │   ├── external/        weather downloads + academic_calendar.csv (tracked)
 │   └── processed/       cleaned parquet files + modelling panel
 ├── docs/                project description + dataset metadata PDFs
-├── notebooks/           01_eda.ipynb, 02_models.ipynb, 03_features.ipynb
+├── notebooks/           01_eda, 02_models, 03_features, 04_final_walkthrough (start here)
 ├── src/
 │   ├── load.py          load + clean raw data, write data/processed/*.parquet
 │   ├── join_check.py    overload ↔ APC join diagnostics
