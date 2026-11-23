@@ -1,0 +1,6 @@
+{
+  "run_at": "2026-11-23T12:58:09",
+  "best_on_validation": "LightGBM I_all_capacity",
+  "trained_on": "2022-2024",
+  "note": "single evaluation of the round-4 (capacity) feature sets on 2026"
+}

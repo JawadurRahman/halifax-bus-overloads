@@ -2,8 +2,11 @@
 data/raw/
 data/processed/
 data/external/*
-# ...except the hand-built academic calendar
+# ...except the hand-built academic calendar and the list of GTFS versions used
 !data/external/academic_calendar.csv
+!data/external/gtfs/
+data/external/gtfs/*
+!data/external/gtfs/needed_versions.json
 
 # Python / Jupyter
 .venv/

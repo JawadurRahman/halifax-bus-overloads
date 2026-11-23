@@ -71,13 +71,13 @@ We compared our models against simple rules anyone could use without machine lea
 | Same as last week | 129 (20%) | 0.14 |
 | Historical rate | 135 (21%) | 0.25 |
 | Basic model | 159 (24%) | 0.29 |
-| **Final model** | **194 (30%)** | **0.37** |
+| **Final model** | **195 (30%)** | **0.36** |
 
 The **overall score** (called PR-AUC) checks how well each method puts real overloads near the top of its risk list, across every cutoff, not just the top 2.
 
 **What this means:**
 
-- The final model catches about **60 more overloads** than the best simple rule (194 vs 135).
+- The final model catches about **60 more overloads** than the best simple rule (195 vs 135).
 - When it flags a route-period as risky, it's **right about half the time** (47%).
 - We checked that this improvement is real and not luck: we resampled the test data many times, and the final model beat the historical rate every time.
 
@@ -91,12 +91,24 @@ We added each kind of information one at a time to see whether it improved the p
 | Ridership counts (how many people boarded recently) | No |
 | University calendar (week of term, breaks, exams) | No |
 | Weather (even with perfect knowledge of the actual weather) | No |
+| Bus schedules (how many buses were scheduled on each route and time period) | No (only slightly without overload history) |
 
 **Why didn't ridership, the calendar or weather help?** They're not useless; they just don't add anything new:
 
 - **Ridership** mostly tells the model "this route is busy at this time", which it already knows from the route, time and month.
 - **The calendar** shows a real pattern (overloads are 3–4 times more common in the first weeks of fall term), but the month already captures it.
 - **Weather** has a small effect in a sensible direction: in heavy rain or snow, overloads are slightly *less* likely, probably because fewer people ride. It's too small to improve the predictions.
+
+## Adding bus schedules
+
+An overload happens when there are more riders than buses, and until now the model only knew about riders. So we added Halifax Transit's published schedules (GTFS, 27 archived versions from 2021–2026, via [Transitland](https://www.transit.land/feeds/f-dxfy-halifaxtransit~hrm)). For each route, day and time period, we counted the scheduled trips and computed **expected riders per bus**. For each day we only used a schedule published before that day.
+
+- **The pattern is real:** when expected riders per bus is in the top tenth, overloads happen 25% of the time, vs 0.5% in the bottom tenth.
+- **But it doesn't improve the predictions** once recent overload history is in the model. The final model scored 0.36 with schedules vs 0.37 without, a difference within noise.
+- **The reason:** Halifax barely changed scheduled service on these 10 routes from 2022 to 2026 (only routes 90 and 10 changed). So "how many buses" is almost the same as "which route and time", which the model already knows.
+- **It does help explain the trend:** riders per scheduled afternoon bus rose from 38 in 2022 to about 50 in 2023–2025 while service stayed flat. That's a likely reason overloads became more common.
+
+Because we pick the final model on 2025 data before testing, the final model is now the version with schedules (score 0.36, 195 overloads caught). It is statistically the same as the version without them.
 
 ## The main takeaway
 
@@ -112,6 +124,8 @@ In practice, this means Halifax Transit's own overload reports are an early-warn
 - **One weather station**, at the airport about 30 km from downtown.
 - **The fall 2025 Dal faculty lockout** delayed most classes to September 23. Our calendar used the official start date, so the calendar features were off for that fall. Worth checking: did the September 2025 overload spike also start late?
 - **Weekends, holidays and late night (midnight–6 am) were left out.**
+- **Schedules show planned buses, not actual ones.** Cancelled or late trips aren't visible, and GTFS doesn't say which buses are the bigger articulated ones.
+- **We've looked at the 2026 test results several times** across rounds. Each new idea was scored on it only once, but a fresh test period (Nov 2026 onward) would make the final numbers more convincing.
 
 ## What's next
 
@@ -119,4 +133,4 @@ In practice, this means Halifax Transit's own overload reports are an early-warn
 2. Prepare the presentation (Nov 24 / 26 / Dec 1).
 3. Write the 5-page paper (due Dec 11).
 
-The code, notebooks and figures are in this repository: `src/`, `notebooks/` (01 = exploring the data, 02 = first models, 03 = new features) and `reports/figures/`.
+The code, notebooks and figures are in this repository: `src/`, `notebooks/` (01 = exploring the data, 02 = first models, 03 = new features, 04 = full walkthrough, 05 = bus schedules) and `reports/figures/`.

@@ -75,10 +75,10 @@ ML project/
 │   ├── raw/
 │   │   ├── overloads/overload_incidents.csv
 │   │   └── apc/apc_2017.csv ... apc_2026.csv
-│   ├── external/        weather downloads + academic_calendar.csv (tracked)
+│   ├── external/        weather + GTFS downloads; academic_calendar.csv and gtfs/needed_versions.json tracked
 │   └── processed/       cleaned parquet files + modelling panel
 ├── docs/                project description + dataset metadata PDFs
-├── notebooks/           01_eda, 02_models, 03_features, 04_final_walkthrough (start here)
+├── notebooks/           01_eda, 02_models, 03_features, 04_final_walkthrough (start here), 05_capacity
 ├── src/
 │   ├── load.py          load + clean raw data, write data/processed/*.parquet
 │   ├── join_check.py    overload ↔ APC join diagnostics
@@ -86,7 +86,9 @@ ML project/
 │   ├── weather.py       download EC weather, build features -> panel_weather.parquet
 │   ├── train.py         baselines, LogReg, LightGBM, metrics, ablation (round 2)
 │   ├── features.py      overload history, calendar, ridership -> panel_features.parquet
-│   └── round3.py        round 3 ablation A-F (validation stage; test stage runs once)
+│   ├── round3.py        round 3 ablation A-F (validation stage; test stage runs once)
+│   ├── capacity.py      round 4: GTFS scheduled-capacity features -> panel_capacity.parquet
+│   └── round4.py        round 4 capacity ablation (validation stage; test stage runs once)
 ├── reports/             results tables (val_*, test_*, r3_*), model selections
 │   └── figures/         figures saved by the notebooks
 ├── requirements.txt

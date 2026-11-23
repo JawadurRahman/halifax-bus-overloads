@@ -1,0 +1,4 @@
+model,vs,metric,diff,ci_low,ci_high,p_le_0
+LightGBM I_all_capacity,Baseline: hist rate,PR-AUC,0.11471417587118737,0.08663305855185781,0.14689937015406354,0.0
+LightGBM I_all_capacity,Baseline: hist rate,recall top 5%,0.0899390243902439,0.060836524370065724,0.1295177531491316,0.0
+LightGBM I_all_capacity,Baseline: hist rate,recall top 10%,0.08993902439024387,0.052699812316666934,0.12068965517241376,0.0
