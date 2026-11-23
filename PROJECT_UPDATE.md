@@ -63,7 +63,7 @@ We compared our models against simple rules anyone could use without machine lea
 
 ## Results
 
-**How we score it:** imagine Halifax Transit can only check the **2 riskiest route-periods each day** (out of 40) and send an extra bus there. In 2026, 656 route-periods actually had an overload. How many of those would each method have caught?
+**How we score it:** imagine Halifax Transit can only check the **riskiest 5% of route-periods** and send an extra bus there. In 2026 that's 416 of 8,320 route-periods, about 2 a day on average (busy days get more, quiet days fewer). 656 route-periods actually had an overload. How many of those would each method have caught?
 
 | Method | Overloads caught (out of 656) | Overall score (0 to 1, higher is better) |
 | --- | --- | --- |
@@ -73,7 +73,7 @@ We compared our models against simple rules anyone could use without machine lea
 | Basic model | 159 (24%) | 0.29 |
 | **Final model** | **195 (30%)** | **0.36** |
 
-The **overall score** (called PR-AUC) checks how well each method puts real overloads near the top of its risk list, across every cutoff, not just the top 2.
+The **overall score** (called PR-AUC) checks how well each method puts real overloads near the top of its risk list, across every cutoff, not just the top 5%.
 
 **What this means:**
 
