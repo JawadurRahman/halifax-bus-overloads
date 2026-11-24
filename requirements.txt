@@ -12,3 +12,4 @@ matplotlib
 pyarrow==18.1.0
 jupyter
 holidays
+xgboost==2.1.3

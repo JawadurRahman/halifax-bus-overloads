@@ -1,0 +1,6 @@
+{
+  "run_at": "2026-11-23T19:47:12",
+  "best_on_validation": "XGBoost I_all_capacity",
+  "trained_on": "2022-2024",
+  "note": "single evaluation of the round-5 model families on 2026"
+}

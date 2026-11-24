@@ -59,7 +59,7 @@ We compared our models against simple rules anyone could use without machine lea
 | **Same as last week** | "There was an overload here last Tuesday afternoon, so expect one this Tuesday too." Knows what's happening *now*, but nothing about the usual pattern. |
 | **Historical rate** | "In past Octobers, Route 1 afternoons had overloads 30% of the time, so the risk is 30%." Knows the *usual* pattern, but nothing about what's happening now. |
 | **Basic model** | A machine-learning model (LightGBM) that learns from route, time of day, weekday and month. |
-| **Final model** | The same model, plus **recent overload history**: how often this route-period had overloads in the last few weeks. Knows both the usual pattern *and* what's happening now. |
+| **Final model** | A tree-based model (XGBoost) that also uses **recent overload history**: how often this route-period had overloads in the last few weeks. Knows both the usual pattern *and* what's happening now. It also gets ridership, the calendar, weather and bus schedules, which turned out not to matter much. |
 
 ## Results
 
@@ -71,14 +71,14 @@ We compared our models against simple rules anyone could use without machine lea
 | Same as last week | 129 (20%) | 0.14 |
 | Historical rate | 135 (21%) | 0.25 |
 | Basic model | 159 (24%) | 0.29 |
-| **Final model** | **195 (30%)** | **0.36** |
+| **Final model** | **191 (29%)** | **0.36** |
 
 The **overall score** (called PR-AUC) checks how well each method puts real overloads near the top of its risk list, across every cutoff, not just the top 5%.
 
 **What this means:**
 
-- The final model catches about **60 more overloads** than the best simple rule (195 vs 135).
-- When it flags a route-period as risky, it's **right about half the time** (47%).
+- The final model catches about **55 more overloads** than the best simple rule (191 vs 135), about 40% more.
+- When it flags a route-period as risky, it's **right about half the time** (46%).
 - We checked that this improvement is real and not luck: we resampled the test data many times, and the final model beat the historical rate every time.
 
 ## What helps and what doesn't
@@ -108,7 +108,27 @@ An overload happens when there are more riders than buses, and until now the mod
 - **The reason:** Halifax barely changed scheduled service on these 10 routes from 2022 to 2026 (only routes 90 and 10 changed). So "how many buses" is almost the same as "which route and time", which the model already knows.
 - **It does help explain the trend:** riders per scheduled afternoon bus rose from 38 in 2022 to about 50 in 2023–2025 while service stayed flat. That's a likely reason overloads became more common.
 
-Because we pick the final model on 2025 data before testing, the final model is now the version with schedules (score 0.36, 195 overloads caught). It is statistically the same as the version without them.
+On 2025 the LightGBM version with schedules scored best so far (0.36 on 2026, 195 overloads caught), statistically the same as the version without them. The next section tries other kinds of model.
+
+## Trying other models
+
+Our first two models were logistic regression (a straight-line model) and LightGBM (boosted decision trees). Maybe a different kind of model would do better, so we tried three more, each tuned on 2025 and tested on 2026 once, with the same clues:
+
+- **Random Forest:** hundreds of independent decision trees that vote.
+- **Neural network:** a small multi-layer network.
+- **XGBoost:** a second boosted-trees library.
+
+| Model | Score (PR-AUC 2026) with overload history | with every clue + schedules |
+| --- | --- | --- |
+| LightGBM | 0.36 | 0.36 |
+| Logistic regression | 0.37 | 0.37 |
+| Random Forest | 0.36 | 0.35 |
+| Neural network | 0.36 | 0.35 |
+| XGBoost | 0.36 | 0.36 |
+
+**No model does better.** All five land within about 0.01 of each other, and none beats LightGBM by more than noise. For every model, recent overload history gives the big jump and the other clues add little. So the limit is the information in the data, not the choice of model.
+
+**The final model is now XGBoost.** We pick the final model by its score on 2025, before looking at 2026, and XGBoost with every clue came first on 2025 by a hair (0.4006 vs 0.3999 for LightGBM). On 2026 it scores 0.36 and catches 191 overloads, versus 195 for LightGBM: the same within noise. We kept the rule rather than switching back after seeing the 2026 results, since choosing on the test year would make the test unfair.
 
 ## The main takeaway
 
@@ -125,7 +145,7 @@ In practice, this means Halifax Transit's own overload reports are an early-warn
 - **The fall 2025 Dal faculty lockout** delayed most classes to September 23. Our calendar used the official start date, so the calendar features were off for that fall. Worth checking: did the September 2025 overload spike also start late?
 - **Weekends, holidays and late night (midnight–6 am) were left out.**
 - **Schedules show planned buses, not actual ones.** Cancelled or late trips aren't visible, and GTFS doesn't say which buses are the bigger articulated ones.
-- **We've looked at the 2026 test results several times** across rounds. Each new idea was scored on it only once, but a fresh test period (Nov 2026 onward) would make the final numbers more convincing.
+- **We've looked at the 2026 test results several times** across rounds (five so far). Each new idea was scored on it only once, but a fresh test period (Nov 2026 onward) would make the final numbers more convincing.
 
 ## What's next
 
@@ -133,4 +153,4 @@ In practice, this means Halifax Transit's own overload reports are an early-warn
 2. Prepare the presentation (Nov 24 / 26 / Dec 1).
 3. Write the 5-page paper (due Dec 11).
 
-The code, notebooks and figures are in this repository: `src/`, `notebooks/` (01 = exploring the data, 02 = first models, 03 = new features, 04 = full walkthrough, 05 = bus schedules) and `reports/figures/`.
+The code, notebooks and figures are in this repository: `src/`, `notebooks/` (01 = exploring the data, 02 = first models, 03 = new features, 04 = full walkthrough, 05 = bus schedules; `src/round5.py` = other models) and `reports/figures/`.

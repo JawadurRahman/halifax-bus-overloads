@@ -1,0 +1,65 @@
+{
+  "RandomForest A_time": {
+    "max_features": 0.3,
+    "min_samples_leaf": 100
+  },
+  "RandomForest B_history": {
+    "max_features": "sqrt",
+    "min_samples_leaf": 20
+  },
+  "RandomForest F_all3_weather": {
+    "max_features": "sqrt",
+    "min_samples_leaf": 20
+  },
+  "RandomForest I_all_capacity": {
+    "max_features": 0.3,
+    "min_samples_leaf": 20
+  },
+  "MLP A_time": {
+    "hidden": [
+      64,
+      32
+    ],
+    "alpha": 0.0001
+  },
+  "MLP B_history": {
+    "hidden": [
+      64
+    ],
+    "alpha": 0.0001
+  },
+  "MLP F_all3_weather": {
+    "hidden": [
+      64
+    ],
+    "alpha": 0.0001
+  },
+  "MLP I_all_capacity": {
+    "hidden": [
+      64,
+      32
+    ],
+    "alpha": 0.01
+  },
+  "XGBoost A_time": {
+    "max_depth": 3,
+    "min_child_weight": 1,
+    "n_estimators": 145
+  },
+  "XGBoost B_history": {
+    "max_depth": 3,
+    "min_child_weight": 1,
+    "n_estimators": 542
+  },
+  "XGBoost F_all3_weather": {
+    "max_depth": 3,
+    "min_child_weight": 1,
+    "n_estimators": 289
+  },
+  "XGBoost I_all_capacity": {
+    "max_depth": 3,
+    "min_child_weight": 10,
+    "n_estimators": 283
+  },
+  "_best_on_validation": "XGBoost I_all_capacity"
+}

@@ -88,8 +88,9 @@ ML project/
 │   ├── features.py      overload history, calendar, ridership -> panel_features.parquet
 │   ├── round3.py        round 3 ablation A-F (validation stage; test stage runs once)
 │   ├── capacity.py      round 4: GTFS scheduled-capacity features -> panel_capacity.parquet
-│   └── round4.py        round 4 capacity ablation (validation stage; test stage runs once)
-├── reports/             results tables (val_*, test_*, r3_*), model selections
+│   ├── round4.py        round 4 capacity ablation (validation stage; test stage runs once)
+│   └── round5.py        round 5: Random Forest, neural network, XGBoost (validation; test runs once)
+├── reports/             results tables (val_*, test_*, r3_*, r4_*, r5_*), model selections
 │   └── figures/         figures saved by the notebooks
 ├── requirements.txt
 └── README.md
@@ -141,7 +142,23 @@ Then run the pipeline from the project root:
 .venv\Scripts\python src\round3.py
 ```
 
-Open `notebooks/01_eda.ipynb`, `notebooks/02_models.ipynb` and `notebooks/03_features.ipynb` with the `.venv` kernel (`.venv\Scripts\jupyter lab`).
+```bash
+.venv\Scripts\python src\capacity.py --download
+```
+
+(needs a Transitland API key in the `TRANSITLAND_API_KEY` environment variable)
+
+```bash
+.venv\Scripts\python src\round4.py
+```
+
+```bash
+.venv\Scripts\python src\round5.py
+```
+
+Each `roundN.py` also has a `--test` stage that scores 2026 once and refuses to run again.
+
+Open the notebooks (start with `notebooks/04_final_walkthrough.ipynb`) with the `.venv` kernel (`.venv\Scripts\jupyter lab`).
 
 > **Note on pinned versions:** on the original dev machine, Windows Smart App Control blocked
 > the compiled DLLs of the newest pandas, pyarrow and scikit-learn releases

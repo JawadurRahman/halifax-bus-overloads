@@ -1,0 +1,4 @@
+model,vs,metric,diff,ci_low,ci_high,p_le_0
+XGBoost I_all_capacity,Baseline: hist rate,PR-AUC,0.10754304915723001,0.07989845079152008,0.13884737776067585,0.0
+XGBoost I_all_capacity,Baseline: hist rate,recall top 5%,0.08384146341463414,0.05359636449163364,0.11756184733342653,0.0
+XGBoost I_all_capacity,Baseline: hist rate,recall top 10%,0.08384146341463417,0.05166824004538102,0.11639228206221312,0.0
