@@ -63,23 +63,31 @@ We compared our models against simple rules anyone could use without machine lea
 
 ## Results
 
-**How we score it:** imagine Halifax Transit can only check the **riskiest 5% of route-periods** and send an extra bus there. In 2026 that's 416 of 8,320 route-periods, about 2 a day on average (busy days get more, quiet days fewer). 656 route-periods actually had an overload. How many of those would each method have caught?
+**How we score it:** the model doesn't say yes or no; it gives each route-period a **risk score** from 0 to 1. To compare methods fairly we use one **overall score (PR-AUC)**, from 0 to 1, which measures how well a method puts the real overloads ahead of the quiet route-periods. Random guessing gets 0.08 (the share of "yes" answers); perfect is 1.
 
-| Method | Overloads caught (out of 656) | Overall score (0 to 1, higher is better) |
+| Method | Overall score (0 to 1, higher is better) |
+| --- | --- |
+| Random guessing | 0.08 |
+| Same as last week | 0.14 |
+| Historical rate | 0.25 |
+| Basic model | 0.29 |
+| **Final model** | **0.36** |
+
+**As yes/no answers.** To get a yes/no answer we draw a line on the risk score, the **cut-off**: above it the model says "yes, overload". We chose the cut-off on 2025 (0.79, the best balance between catching overloads and avoiding false alarms) and kept it for 2026. In 2026, 656 route-periods actually had an overload:
+
+| | Really an overload | Really no overload |
 | --- | --- | --- |
-| Random guessing | about 33 (5%) | 0.08 |
-| Same as last week | 129 (20%) | 0.14 |
-| Historical rate | 135 (21%) | 0.25 |
-| Basic model | 159 (24%) | 0.29 |
-| **Final model** | **191 (29%)** | **0.36** |
-
-The **overall score** (called PR-AUC) checks how well each method puts real overloads near the top of its risk list, across every cutoff, not just the top 5%.
+| **Model said "yes"** | **299 caught** | 507 false alarms |
+| **Model said "no"** | 357 missed | 7,157 correctly quiet |
 
 **What this means:**
 
-- The final model catches about **55 more overloads** than the best simple rule (191 vs 135), about 40% more.
-- When it flags a route-period as risky, it's **right about half the time** (46%).
-- We checked that this improvement is real and not luck: we resampled the test data many times, and the final model beat the historical rate every time.
+- The final model **catches 46% of all overloads** (299 of 656). That's called **recall**.
+- When it says "yes", it's **right 37% of the time** (299 of 806). That's called **precision**.
+- To catch the same 299 overloads, the best simple rule (historical rate) would have to say "yes" about 1,050 times, so the model raises about **240 fewer false alarms**.
+- If you pick one route-period that had an overload and one that didn't, the model gives the real overload the higher risk score **86% of the time**.
+- A lower cut-off catches more (at 0.5: 79% of overloads), but then only 22% of the "yes" answers are right. Where to draw the line is a choice; the overall score covers every choice at once.
+- We checked that the improvement is real and not luck: we re-scored the model on 1,000 reshuffled versions of 2026, and it beat the historical rate every time.
 
 ## What helps and what doesn't
 
@@ -108,7 +116,7 @@ An overload happens when there are more riders than buses, and until now the mod
 - **The reason:** Halifax barely changed scheduled service on these 10 routes from 2022 to 2026 (only routes 90 and 10 changed). So "how many buses" is almost the same as "which route and time", which the model already knows.
 - **It does help explain the trend:** riders per scheduled afternoon bus rose from 38 in 2022 to about 50 in 2023–2025 while service stayed flat. That's a likely reason overloads became more common.
 
-On 2025 the LightGBM version with schedules scored best so far (0.36 on 2026, 195 overloads caught), statistically the same as the version without them. The next section tries other kinds of model.
+On 2025 the LightGBM version with schedules scored best so far (0.36 on 2026), statistically the same as the version without them. The next section tries other kinds of model.
 
 ## Trying other models
 
@@ -128,7 +136,7 @@ Our first two models were logistic regression (a straight-line model) and LightG
 
 **No model does better.** All five land within about 0.01 of each other, and none beats LightGBM by more than noise. For every model, recent overload history gives the big jump and the other clues add little. So the limit is the information in the data, not the choice of model.
 
-**The final model is now XGBoost.** We pick the final model by its score on 2025, before looking at 2026, and XGBoost with every clue came first on 2025 by a hair (0.4006 vs 0.3999 for LightGBM). On 2026 it scores 0.36 and catches 191 overloads, versus 195 for LightGBM: the same within noise. We kept the rule rather than switching back after seeing the 2026 results, since choosing on the test year would make the test unfair.
+**The final model is now XGBoost.** We pick the final model by its score on 2025, before looking at 2026, and XGBoost with every clue came first on 2025 by a hair (0.4006 vs 0.3999 for LightGBM). On 2026 it scores 0.356, versus 0.363 for LightGBM: the same within noise. We kept the rule rather than switching back after seeing the 2026 results, since choosing on the test year would make the test unfair.
 
 ## The main takeaway
 
